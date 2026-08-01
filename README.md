@@ -1,8 +1,8 @@
 # modelship-unraid
 
-Unraid Docker template for [modelship](https://github.com/alez007/modelship) — a self-hosted, OpenAI-compatible inference server (chat/reasoning, embeddings, STT, TTS, image generation) built on Ray Serve, with pluggable vLLM / llama.cpp / Diffusers backends.
+Unraid Docker template for [modelship](https://github.com/modelship-ai/modelship) — a self-hosted, OpenAI-compatible inference server (chat/reasoning, embeddings, STT, TTS, image generation) built on Ray Serve, with pluggable vLLM / llama.cpp / Diffusers backends.
 
-This repo just holds the template XML — the application itself lives in the main [modelship](https://github.com/alez007/modelship) repo.
+This repo just holds the template XML — the application itself lives in the main [modelship](https://github.com/modelship-ai/modelship) repo.
 
 ## Installing
 
@@ -10,8 +10,8 @@ Unraid removed the OS-level "Template Repositories" setting in 6.10.0 (per Squid
 
 There are two separate templates — grab whichever variant(s) you want (see [GPU vs CPU-only](#gpu-vs-cpu-only) below):
 
-- GPU: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship-cuda.xml`
-- CPU-only: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship-cpu.xml`
+- GPU: `https://raw.githubusercontent.com/modelship-ai/modelship-unraid/main/templates/modelship-cuda.xml`
+- CPU-only: `https://raw.githubusercontent.com/modelship-ai/modelship-unraid/main/templates/modelship-cpu.xml`
 
 **Option A — plain Docker (no plugin needed):**
 
@@ -28,8 +28,8 @@ Either way this is local to your box only — it does **not** make the template 
 
 There are two separate templates, so the right one is picked directly from the Add Container Template dropdown — no post-install editing needed:
 
-- **`modelship-cuda`** — GPU image (`ghcr.io/alez007/modelship:latest-cuda`), needs the NVIDIA Driver plugin and NVIDIA Container Toolkit set up on your Unraid box. `Extra Parameters` includes `--runtime=nvidia`. (Plain `:latest`, with no suffix, is modelship's thin control/coordinator image — no torch/vllm — and will report 0 GPU/CPU capacity; don't use it for this template.)
-- **`modelship-cpu`** — CPU-only image (`ghcr.io/alez007/modelship:latest-cpu`), works on any box (amd64 or arm64, including Apple Silicon hosts), no GPU or NVIDIA Container Toolkit needed. `Extra Parameters` has no `--runtime=nvidia`, and the `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES` variables are dropped entirely.
+- **`modelship-cuda`** — GPU image (`ghcr.io/modelship-ai/modelship:latest-cuda`), needs the NVIDIA Driver plugin and NVIDIA Container Toolkit set up on your Unraid box. `Extra Parameters` includes `--runtime=nvidia`. (Plain `:latest`, with no suffix, is modelship's thin control/coordinator image — no torch/vllm — and will report 0 GPU/CPU capacity; don't use it for this template.)
+- **`modelship-cpu`** — CPU-only image (`ghcr.io/modelship-ai/modelship:latest-cpu`), works on any box (amd64 or arm64, including Apple Silicon hosts), no GPU or NVIDIA Container Toolkit needed. `Extra Parameters` has no `--runtime=nvidia`, and the `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES` variables are dropped entirely.
 
 **Why two templates instead of one with a tag picker:** Unraid templates do support a `<Branch>`/tag-selector mechanism for offering multiple image tags from one template, but it only swaps the image tag — it can't conditionally change `Extra Parameters` or hide/show variables based on which tag is picked. `--runtime=nvidia` is a Docker *container-creation* flag, not something the image itself controls: it tells the Docker daemon to use a runtime named `nvidia`, which only exists if the NVIDIA Container Toolkit registered it. Without that toolkit, Docker refuses to even create the container (`unknown or invalid runtime name: nvidia`) — regardless of which image tag you picked. A single tag-picker template would need everyone selecting the CPU tag to also remember to manually delete `--runtime=nvidia` from Extra Parameters first, or the "CPU-only, no GPU needed" install would break immediately. Two templates avoid that footgun entirely — each one's `Extra Parameters` is correct by default for its own hardware target.
 
@@ -50,7 +50,7 @@ models:
       n_ctx: 4096
 ```
 
-For GPU models (vLLM, Diffusers), multi-model stacks, and the full config reference, see [docs/model-configuration.md](https://github.com/alez007/modelship/blob/main/docs/model-configuration.md) and the ready-made examples in [config/examples/](https://github.com/alez007/modelship/tree/main/config/examples).
+For GPU models (vLLM, Diffusers), multi-model stacks, and the full config reference, see [docs/model-configuration.md](https://github.com/modelship-ai/modelship/blob/main/docs/model-configuration.md) and the ready-made examples in [config/examples/](https://github.com/modelship-ai/modelship/tree/main/config/examples).
 
 ## `--shm-size` — read this before raising it
 
@@ -94,4 +94,4 @@ Both templates reference [`icon.png`](icon.png) in this repo. Unraid's Docker te
 
 ## License
 
-Apache 2.0, matching [modelship](https://github.com/alez007/modelship).
+Apache 2.0, matching [modelship](https://github.com/modelship-ai/modelship).

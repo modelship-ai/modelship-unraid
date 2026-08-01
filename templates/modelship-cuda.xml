@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>modelship-cuda</Name>
-  <Repository>ghcr.io/alez007/modelship:latest-cuda</Repository>
-  <Registry>https://ghcr.io/alez007/modelship</Registry>
+  <Repository>ghcr.io/modelship-ai/modelship:latest-cuda</Repository>
+  <Registry>https://ghcr.io/modelship-ai/modelship</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/alez007/modelship/issues</Support>
-  <Project>https://github.com/alez007/modelship</Project>
-  <Overview>Self-hosted, OpenAI-compatible inference for the agentic era. Modelship runs your whole AI stack -- reasoning LLMs with universal tool calling, embeddings, speech-to-text, text-to-speech, and image generation -- as multiple models sharing your GPUs behind a single OpenAI-compatible gateway. Built on Ray Serve with pluggable backends (vLLM, llama.cpp, Diffusers, plugins).&#10;&#10;This is the GPU variant, and requires the NVIDIA Driver plugin + NVIDIA Container Toolkit set up on this Unraid box. For a CPU-only host, use the separate "modelship-cpu" template instead.&#10;&#10;IMPORTANT: create your models.yaml at the path below BEFORE starting the container -- it will not start without one. See https://github.com/alez007/modelship/blob/main/docs/model-configuration.md and https://github.com/alez007/modelship/tree/main/config/examples for the format and ready-made examples.&#10;&#10;IMPORTANT: the default --shm-size=2g in Extra Parameters is sized only for a single small quick-start model. Ray sizes its object store to roughly 30% of the RAM it sees as available AT STARTUP -- if --shm-size is smaller than that, Ray crashes immediately. Raise --shm-size (roughly 30% of the RAM you want to give modelship) for bigger or multi-model / GPU stacks.</Overview>
+  <Support>https://github.com/modelship-ai/modelship/issues</Support>
+  <Project>https://github.com/modelship-ai/modelship</Project>
+  <Overview>Self-hosted, OpenAI-compatible inference for the agentic era. Modelship runs your whole AI stack -- reasoning LLMs with universal tool calling, embeddings, speech-to-text, text-to-speech, and image generation -- as multiple models sharing your GPUs behind a single OpenAI-compatible gateway. Built on Ray Serve with pluggable backends (vLLM, llama.cpp, Diffusers, plugins).&#10;&#10;This is the GPU variant, and requires the NVIDIA Driver plugin + NVIDIA Container Toolkit set up on this Unraid box. For a CPU-only host, use the separate "modelship-cpu" template instead.&#10;&#10;IMPORTANT: create your models.yaml at the path below BEFORE starting the container -- it will not start without one. See https://github.com/modelship-ai/modelship/blob/main/docs/model-configuration.md and https://github.com/modelship-ai/modelship/tree/main/config/examples for the format and ready-made examples.&#10;&#10;IMPORTANT: the default --shm-size=2g in Extra Parameters is sized only for a single small quick-start model. Ray sizes its object store to roughly 30% of the RAM it sees as available AT STARTUP -- if --shm-size is smaller than that, Ray crashes immediately. Raise --shm-size (roughly 30% of the RAM you want to give modelship) for bigger or multi-model / GPU stacks.</Overview>
   <Category>AI:</Category>
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
   <TemplateURL/>
-  <Icon>https://raw.githubusercontent.com/alez007/modelship-unraid/main/icon.png</Icon>
+  <Icon>https://raw.githubusercontent.com/modelship-ai/modelship-unraid/main/icon.png</Icon>
   <ExtraParams>--shm-size=2g --runtime=nvidia -e MSHIP_UID=99 -e MSHIP_GID=100</ExtraParams>
   <PostArgs/>
   <CPUset/>
