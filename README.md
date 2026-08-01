@@ -10,25 +10,25 @@ Unraid removed the OS-level "Template Repositories" setting in 6.10.0 (per Squid
 
 There are two separate templates — grab whichever variant(s) you want (see [GPU vs CPU-only](#gpu-vs-cpu-only) below):
 
-- GPU: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship.xml`
+- GPU: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship-cuda.xml`
 - CPU-only: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship-cpu.xml`
 
 **Option A — plain Docker (no plugin needed):**
 
 1. Save the XML file(s) into `/boot/config/plugins/dockerMan/templates-user/` on your Unraid box (Unraid's built-in File Manager, or `wget` over SSH into that folder) — keep the filenames as-is.
-2. Docker tab → **Add Container** → **Template** dropdown → `modelship` and/or `modelship-cpu` are now listed.
+2. Docker tab → **Add Container** → **Template** dropdown → `modelship-cuda` and/or `modelship-cpu` are now listed.
 
 **Option B — Community Applications "Private" templates (if you have the CA plugin):**
 
 Save the same XML file(s) instead to `/boot/config/plugins/community.applications/private/<your-username>/`. They'll show up under Apps → search, tagged "Private" — same manual copy, just a bit more integrated with the CA browsing UI.
 
-Either way this is local to your box only — it does **not** make the template discoverable by other Unraid users. That requires actually submitting it to the official CA index for review (a forum post or PR to [Squidly271/community.applications](https://github.com/Squidly271/community.applications)), which is a separate, out-of-scope step from this repo.
+Either way this is local to your box only — it does **not** make the template discoverable by other Unraid users. That requires submitting this repo through the official [Community Apps portal](https://ca.unraid.net/submit), which is a separate, out-of-scope step from this repo.
 
 ## GPU vs CPU-only
 
 There are two separate templates, so the right one is picked directly from the Add Container Template dropdown — no post-install editing needed:
 
-- **`modelship`** — GPU image (`ghcr.io/alez007/modelship:latest-cuda`), needs the NVIDIA Driver plugin and NVIDIA Container Toolkit set up on your Unraid box. `Extra Parameters` includes `--runtime=nvidia`. (Plain `:latest`, with no suffix, is modelship's thin control/coordinator image — no torch/vllm — and will report 0 GPU/CPU capacity; don't use it for this template.)
+- **`modelship-cuda`** — GPU image (`ghcr.io/alez007/modelship:latest-cuda`), needs the NVIDIA Driver plugin and NVIDIA Container Toolkit set up on your Unraid box. `Extra Parameters` includes `--runtime=nvidia`. (Plain `:latest`, with no suffix, is modelship's thin control/coordinator image — no torch/vllm — and will report 0 GPU/CPU capacity; don't use it for this template.)
 - **`modelship-cpu`** — CPU-only image (`ghcr.io/alez007/modelship:latest-cpu`), works on any box (amd64 or arm64, including Apple Silicon hosts), no GPU or NVIDIA Container Toolkit needed. `Extra Parameters` has no `--runtime=nvidia`, and the `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES` variables are dropped entirely.
 
 **Why two templates instead of one with a tag picker:** Unraid templates do support a `<Branch>`/tag-selector mechanism for offering multiple image tags from one template, but it only swaps the image tag — it can't conditionally change `Extra Parameters` or hide/show variables based on which tag is picked. `--runtime=nvidia` is a Docker *container-creation* flag, not something the image itself controls: it tells the Docker daemon to use a runtime named `nvidia`, which only exists if the NVIDIA Container Toolkit registered it. Without that toolkit, Docker refuses to even create the container (`unknown or invalid runtime name: nvidia`) — regardless of which image tag you picked. A single tag-picker template would need everyone selecting the CPU tag to also remember to manually delete `--runtime=nvidia` from Extra Parameters first, or the "CPU-only, no GPU needed" install would break immediately. Two templates avoid that footgun entirely — each one's `Extra Parameters` is correct by default for its own hardware target.
@@ -71,7 +71,7 @@ This template keeps the Config surface intentionally small — enough to get a w
 
 ## Troubleshooting: edits to the container "don't stick"
 
-If you edit the container in Unraid (add an env var, change the models.yaml path) and it looks like your change reverted — or a change you made earlier vanished when you changed something else — **check the running container before assuming the save failed.** The Unraid Docker **Edit** form caches aggressively and frequently shows stale values *after* you click Apply, even though the write already landed on disk (`/boot/config/plugins/dockerMan/templates-user/my-modelship.xml`) and on the live container.
+If you edit the container in Unraid (add an env var, change the models.yaml path) and it looks like your change reverted — or a change you made earlier vanished when you changed something else — **check the running container before assuming the save failed.** The Unraid Docker **Edit** form caches aggressively and frequently shows stale values *after* you click Apply, even though the write already landed on disk (`/boot/config/plugins/dockerMan/templates-user/my-modelship-cuda.xml`) and on the live container.
 
 Ground truth is `docker inspect`, which reads the actual running process, not the GUI's cache:
 

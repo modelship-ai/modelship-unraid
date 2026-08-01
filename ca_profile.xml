@@ -1,0 +1,11 @@
+<CommunityApplications>
+  <Profile>
+    Unraid Docker templates for [modelship](https://github.com/alez007/modelship) — a self-hosted, OpenAI-compatible inference server (chat/reasoning, embeddings, STT, TTS, image generation) built on Ray Serve, with pluggable vLLM / llama.cpp / Diffusers backends.
+
+    Two templates are provided: `modelship` (GPU, requires the NVIDIA Driver plugin and Container Toolkit) and `modelship-cpu` (CPU-only, works on any box). See the [README](https://github.com/alez007/modelship-unraid#gpu-vs-cpu-only) for which one to pick and how to configure `models.yaml` before first start.
+
+    For support, please open an issue on the [modelship-unraid GitHub repo](https://github.com/alez007/modelship-unraid/issues).
+  </Profile>
+  <Icon>https://raw.githubusercontent.com/alez007/modelship-unraid/main/icon.png</Icon>
+  <WebPage>https://github.com/alez007/modelship-unraid</WebPage>
+</CommunityApplications>

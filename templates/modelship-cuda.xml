@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>modelship</Name>
+  <Name>modelship-cuda</Name>
   <Repository>ghcr.io/alez007/modelship:latest-cuda</Repository>
   <Registry>https://ghcr.io/alez007/modelship</Registry>
   <Network>bridge</Network>
