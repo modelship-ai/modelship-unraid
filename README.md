@@ -54,12 +54,12 @@ For GPU models (vLLM, Diffusers), multi-model stacks, and the full config refere
 
 ## `--shm-size` — read this before raising it
 
-The template's `--shm-size=2g` default (in **Extra Parameters**) is only sized for the single small quick-start model above. Ray sizes its shared-memory object store to roughly **30% of the RAM it detects as available, at startup** — before any model even loads. If `--shm-size` is smaller than that computed target, Ray crashes immediately on boot.
+`--shm-size` (in **Extra Parameters**) is shared memory Ray uses to pass data between models fast. The template's default of `2g` is only sized for the single small quick-start model above.
 
 There's no universal "correct" number — it scales with your box's RAM and what you're running:
 
 - Bigger/more models, or a GPU stack → raise `--shm-size` to roughly 30% of the RAM you want to give modelship.
-- Small Unraid boxes with little free RAM → keep it low; setting it far above what the host actually has doesn't crash anything immediately (the tmpfs is lazily backed), but if Ray/vLLM actually try to use that much, you'll hit real out-of-memory pressure instead of a clean startup error.
+- Small Unraid boxes with little free RAM → keep it low; setting it far above what the host actually has doesn't cause problems immediately (the tmpfs is lazily backed), but if Ray/vLLM actually try to use that much, you'll hit real out-of-memory pressure instead of a clean startup error.
 
 ## What's exposed vs not
 
