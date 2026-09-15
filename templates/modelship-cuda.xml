@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
   <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/modelship-ai/modelship-unraid/main/icon.png</Icon>
-  <ExtraParams>--shm-size=2g --runtime=nvidia -e MSHIP_UID=99 -e MSHIP_GID=100</ExtraParams>
+  <ExtraParams>--shm-size=2g --runtime=nvidia</ExtraParams>
   <PostArgs>deploy --config /modelship/config/models.yaml</PostArgs>
   <CPUset/>
   <DateInstalled/>
@@ -29,7 +29,6 @@
   <Config Name="MSHIP_API_KEYS" Target="MSHIP_API_KEYS" Default="" Mode="" Description="Comma-separated API keys clients must send as 'Authorization: Bearer &lt;key&gt;'. Leave empty to disable auth (fine for a LAN-only deployment)." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
   <Config Name="MSHIP_LOG_LEVEL" Target="MSHIP_LOG_LEVEL" Default="INFO" Mode="" Description="Log verbosity: TRACE, DEBUG, INFO, or WARNING." Type="Variable" Display="advanced" Required="false" Mask="false">INFO</Config>
   <Config Name="MSHIP_METRICS" Target="MSHIP_METRICS" Default="true" Mode="" Description="Enable Prometheus metrics on the Metrics Port. Set to false to disable." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
-  <Config Name="USER" Target="USER" Default="modelship" Mode="" Description="Username the container reports to Python's getpass.getuser(). The container runs as UID 99 (MSHIP_UID), which has no /etc/passwd entry, so without this vLLM/torch init crashes with 'getpwuid(): uid not found: 99'. Leave as-is unless you know why you're changing it." Type="Variable" Display="advanced" Required="false" Mask="false">modelship</Config>
   <Config Name="NVIDIA_VISIBLE_DEVICES" Target="NVIDIA_VISIBLE_DEVICES" Default="all" Mode="" Description="Which GPUs to expose to the container (GPU variant only). 'all', or a comma-separated list of GPU UUIDs/indices." Type="Variable" Display="advanced" Required="false" Mask="false">all</Config>
   <Config Name="NVIDIA_DRIVER_CAPABILITIES" Target="NVIDIA_DRIVER_CAPABILITIES" Default="all" Mode="" Description="NVIDIA driver capabilities exposed to the container (GPU variant only)." Type="Variable" Display="advanced" Required="false" Mask="false">all</Config>
 </Container>
