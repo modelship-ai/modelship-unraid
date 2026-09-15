@@ -79,6 +79,10 @@ deploy --config /modelship/config/models.yaml
 
 If you installed the template before this was added, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has empty Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to the line above → Apply.
 
+## Troubleshooting: `llama-server provisioning failed: Permission denied`
+
+Earlier versions of both templates set `-e MSHIP_UID=99 -e MSHIP_GID=100` in **Extra Parameters** and a `USER` variable. On modelship 0.7.15 that combination breaks the `llama_server` loader. Edit the container → toggle **Advanced View** → delete both `-e` flags from **Extra Parameters** and remove the `USER` variable → Apply. Model weights already in your cache are kept.
+
 ## Troubleshooting: edits to the container "don't stick"
 
 If you edit the container in Unraid (add an env var, change the models.yaml path) and it looks like your change reverted — or a change you made earlier vanished when you changed something else — **check the running container before assuming the save failed.** The Unraid Docker **Edit** form caches aggressively and frequently shows stale values *after* you click Apply, even though the write already landed on disk (`/boot/config/plugins/dockerMan/templates-user/my-modelship-cuda.xml`) and on the live container.
