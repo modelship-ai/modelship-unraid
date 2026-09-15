@@ -15,7 +15,7 @@
   <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/modelship-ai/modelship-unraid/main/icon.png</Icon>
   <ExtraParams>--shm-size=2g --runtime=nvidia -e MSHIP_UID=99 -e MSHIP_GID=100</ExtraParams>
-  <PostArgs/>
+  <PostArgs>deploy --config /modelship/config/models.yaml</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>

@@ -69,6 +69,16 @@ This template keeps the Config surface intentionally small — enough to get a w
 - **Advanced**: metrics port + toggle, `MSHIP_API_KEYS`, `MSHIP_LOG_LEVEL`, and (GPU template only) `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES`.
 - **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store (Redis/file), OpenTelemetry export, syslog log target/format, existing-Ray-cluster attach, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. Plugin backends (Kokoro ONNX, Orpheus, whisper.cpp) need no container-level config at all — they're pulled in automatically based on what your `models.yaml` references.
 
+## Troubleshooting: container exits with `usage: mship {bootstrap,deploy,info}`
+
+Since modelship v0.7.13 the image's entrypoint is the `mship` CLI with no default subcommand, so the container needs `deploy` passed to it. Both templates set this in **Post Arguments**:
+
+```
+deploy --config /modelship/config/models.yaml
+```
+
+If you installed the template before this was added, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has empty Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to the line above → Apply.
+
 ## Troubleshooting: edits to the container "don't stick"
 
 If you edit the container in Unraid (add an env var, change the models.yaml path) and it looks like your change reverted — or a change you made earlier vanished when you changed something else — **check the running container before assuming the save failed.** The Unraid Docker **Edit** form caches aggressively and frequently shows stale values *after* you click Apply, even though the write already landed on disk (`/boot/config/plugins/dockerMan/templates-user/my-modelship-cuda.xml`) and on the live container.
