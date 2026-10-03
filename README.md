@@ -66,18 +66,22 @@ There's no universal "correct" number — it scales with your box's RAM and what
 This template keeps the Config surface intentionally small — enough to get a working single-container deployment without needing to understand Ray, state stores, or gateway replicas:
 
 - **Always visible**: API port, models.yaml path, model cache path, `HF_TOKEN`.
-- **Advanced**: metrics port + toggle, `MSHIP_API_KEYS`, `MSHIP_LOG_LEVEL`, and (GPU template only) `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES`.
-- **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store (Redis/file), OpenTelemetry export, syslog log target/format, existing-Ray-cluster attach, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. Plugin backends (Kokoro ONNX, Orpheus, whisper.cpp) need no container-level config at all — they're pulled in automatically based on what your `models.yaml` references.
+- **Advanced**: metrics port + toggle, `MSHIP_LOG_LEVEL`, and (GPU template only) `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES`.
+- **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store, OpenTelemetry export, syslog log target/format, joining worker nodes, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. Plugin backends (Kokoro ONNX, Orpheus, whisper.cpp) need no container-level config at all — they're pulled in automatically based on what your `models.yaml` references.
 
-## Troubleshooting: container exits with `usage: mship {bootstrap,deploy,info}`
+## No authentication
 
-Since modelship v0.7.13 the image's entrypoint is the `mship` CLI with no default subcommand, so the container needs `deploy` passed to it. Both templates set this in **Post Arguments**:
+modelship does not authenticate callers: there are no API keys, and anyone who can reach the API port can use it. Keep it on a trusted network, or put an authenticating reverse proxy in front before exposing it further. (Earlier templates offered a `MSHIP_API_KEYS` variable; modelship no longer reads it, so delete it from an existing container.)
+
+## Troubleshooting: container exits with `usage: mship {bootstrap,start,join,deploy,info}`
+
+The image's entrypoint is the `mship` CLI with no default subcommand, so the container needs `start` passed to it. Both templates set this in **Post Arguments**:
 
 ```
-deploy --config /modelship/config/models.yaml
+start --config /modelship/config/models.yaml
 ```
 
-If you installed the template before this was added, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has empty Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to the line above → Apply.
+If you installed the template earlier, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has the old Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to the line above → Apply. This applies to `deploy …` (modelship up to v0.7.15) and to empty Post Arguments alike. With `deploy …` on a newer image the container exits at once with `no Ray cluster is running on this machine`; `deploy` now only sends a model change to a server that is already running.
 
 ## Troubleshooting: `llama-server provisioning failed: Permission denied`
 
