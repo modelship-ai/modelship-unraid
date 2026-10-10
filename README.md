@@ -67,7 +67,7 @@ This template keeps the Config surface intentionally small — enough to get a w
 
 - **Always visible**: API port, models.yaml path, model cache path, `HF_TOKEN`.
 - **Advanced**: metrics port + toggle, `MSHIP_LOG_LEVEL`, and (GPU template only) `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES`.
-- **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store, OpenTelemetry export, syslog log target/format, joining worker nodes, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. Plugin backends (Kokoro ONNX, Orpheus, whisper.cpp) need no container-level config at all — they're pulled in automatically based on what your `models.yaml` references.
+- **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store, OpenTelemetry export, syslog log target/format, joining worker nodes, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. The speech and image backends (sherpa-onnx for Kokoro TTS, whisper.cpp for speech-to-text, stable-diffusion.cpp) are built into both images and need no container-level config at all — your `models.yaml` picks one per model.
 
 ## No authentication
 
@@ -81,7 +81,7 @@ The image's entrypoint is the `mship` CLI with no default subcommand, so the con
 start --config /modelship/config/models.yaml
 ```
 
-If you installed the template earlier, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has the old Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to the line above → Apply. This applies to `deploy …` (modelship up to v0.7.15) and to empty Post Arguments alike. With `deploy …` on a newer image the container exits at once with `no Ray cluster is running on this machine`; `deploy` now only sends a model change to a server that is already running.
+If you installed the template earlier, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has the old Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to the line above → Apply. This applies to `deploy …` (modelship up to v0.7.15) and to empty Post Arguments alike. With `deploy …` on a newer image the container logs `Waiting for a Ray node on this machine.`, serves nothing, and exits after 5 minutes with `no Ray cluster is running on this machine after 5 min`; `deploy` now only sends a model change to a server that is already running.
 
 ## Troubleshooting: `llama-server provisioning failed: Permission denied`
 
