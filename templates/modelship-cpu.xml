@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
   <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/modelship-ai/modelship-unraid/main/icon.png</Icon>
-  <ExtraParams>--shm-size=8g --pids-limit -1</ExtraParams>
+  <ExtraParams>--shm-size=8g</ExtraParams>
   <PostArgs>start</PostArgs>
   <CPUset/>
   <DateInstalled/>

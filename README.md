@@ -43,6 +43,8 @@ A fresh install runs `start` with nothing else, so the API is up but serves no m
 start --model lmstudio-community/Qwen3-8B-GGUF:'*Q4_K_M.gguf' --loader llama_server --usecase generate
 ```
 
+On the GPU template, add `--num-gpus 1` to the end of that line, otherwise the model runs on the CPU.
+
 The weights download into the Model Cache on first start, so the first start takes a while; watch the container log. Every `--model` flag maps to a `models.yaml` key, and any config key can be set the same way, e.g. `--llama-server-config.n-ctx 8192`. The flag reference is in [docs/model-configuration.md](https://github.com/modelship-ai/modelship/blob/main/docs/model-configuration.md).
 
 **Several models, from a file.** Create `models.yaml` in the **Config Folder** (default `/mnt/user/appdata/modelship/config/`), then set **Post Arguments** to:
@@ -59,6 +61,7 @@ models:
     model: "lmstudio-community/Qwen3-8B-GGUF:*Q4_K_M.gguf"
     usecase: generate
     loader: llama_server
+    num_gpus: 1   # GPU template only
 ```
 
 For GPU models (vLLM, Diffusers), multi-model stacks, and the full config reference, see [docs/model-configuration.md](https://github.com/modelship-ai/modelship/blob/main/docs/model-configuration.md) and the ready-made examples in [config/examples/](https://github.com/modelship-ai/modelship/tree/main/config/examples).
@@ -93,12 +96,6 @@ start
 ```
 
 Add your models to that line, see [Deploying models](#deploying-models). If you installed the template earlier, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has the old Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to `start`, followed by your models → Apply. This applies to `deploy …` (modelship up to v0.7.15) and to empty Post Arguments alike. With `deploy …` on a newer image the container logs `Waiting for a Ray node on this machine.`, serves nothing, and exits after 5 minutes with `no Ray cluster is running on this machine after 5 min`; `deploy` now only sends a model change to a server that is already running.
-
-## Troubleshooting: `pthread_create failed: Resource temporarily unavailable`
-
-Unraid caps every container at 2048 processes and threads (`--pids-limit 2048`) unless **Extra Parameters** sets its own `--pids-limit`. modelship runs a Ray cluster inside the container: about 25 processes plus one idle worker per CPU core, each with 35–50 threads. That is about 1,100 threads on a 10-core box before any model loads, and it grows with every core and every model. At the cap, thread creation fails: the log fills with `pthread_create failed: Resource temporarily unavailable`, `thread: Resource temporarily unavailable [system:11]` and `SIGABRT` stack traces from Ray workers, and the model never comes up.
-
-Both templates set `--pids-limit -1` (no cap). If you installed the template earlier, your saved container config doesn't have it: edit the container → toggle **Advanced View** → append `--pids-limit -1` to **Extra Parameters** → Apply. To see how close a running container is, compare the `PIDS` column of `docker stats --no-stream modelship-cuda` with `docker inspect -f '{{.HostConfig.PidsLimit}}' modelship-cuda`.
 
 ## Troubleshooting: `llama-server provisioning failed: Permission denied`
 
