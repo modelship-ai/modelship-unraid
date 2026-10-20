@@ -33,28 +33,39 @@ There are two separate templates, so the right one is picked directly from the A
 
 **Why two templates instead of one with a tag picker:** Unraid templates do support a `<Branch>`/tag-selector mechanism for offering multiple image tags from one template, but it only swaps the image tag — it can't conditionally change `Extra Parameters` or hide/show variables based on which tag is picked. `--runtime=nvidia` is a Docker *container-creation* flag, not something the image itself controls: it tells the Docker daemon to use a runtime named `nvidia`, which only exists if the NVIDIA Container Toolkit registered it. Without that toolkit, Docker refuses to even create the container (`unknown or invalid runtime name: nvidia`) — regardless of which image tag you picked. A single tag-picker template would need everyone selecting the CPU tag to also remember to manually delete `--runtime=nvidia` from Extra Parameters first, or the "CPU-only, no GPU needed" install would break immediately. Two templates avoid that footgun entirely — each one's `Extra Parameters` is correct by default for its own hardware target.
 
-## Before you start the container
+## Deploying models
 
-modelship refuses to start without a `models.yaml`. Create one at the path you set for **Models Config** (default `/mnt/user/appdata/modelship/models.yaml`) before applying the template.
+A fresh install runs `start` with nothing else, so the API is up but serves no models: `curl http://<unraid-ip>:8000/modelship/v1/models` returns an empty list. You choose the models in **Post Arguments** (edit the container → toggle **Advanced View**).
 
-Smallest possible CPU quick-start (a tiny reasoning model, no GPU, runs almost anywhere):
+**One model, no file.** Set **Post Arguments** to:
+
+```
+start --model lmstudio-community/Qwen3-8B-GGUF:'*Q4_K_M.gguf' --loader llama_server --usecase generate
+```
+
+The weights download into the Model Cache on first start, so the first start takes a while; watch the container log. Every `--model` flag maps to a `models.yaml` key, and any config key can be set the same way, e.g. `--llama-server-config.n-ctx 8192`. The flag reference is in [docs/model-configuration.md](https://github.com/modelship-ai/modelship/blob/main/docs/model-configuration.md).
+
+**Several models, from a file.** Create `models.yaml` in the **Config Folder** (default `/mnt/user/appdata/modelship/config/`), then set **Post Arguments** to:
+
+```
+start --config /modelship/config/models.yaml
+```
+
+The same model as above, as a file:
 
 ```yaml
 models:
-  - name: reasoning-qwen
-    model: "lmstudio-community/Qwen3-0.6B-GGUF:*Q4_K_M.gguf"
+  - name: qwen3-8b
+    model: "lmstudio-community/Qwen3-8B-GGUF:*Q4_K_M.gguf"
     usecase: generate
     loader: llama_server
-    num_cpus: 3
-    llama_server_config:
-      n_ctx: 4096
 ```
 
 For GPU models (vLLM, Diffusers), multi-model stacks, and the full config reference, see [docs/model-configuration.md](https://github.com/modelship-ai/modelship/blob/main/docs/model-configuration.md) and the ready-made examples in [config/examples/](https://github.com/modelship-ai/modelship/tree/main/config/examples).
 
 ## `--shm-size` — read this before raising it
 
-`--shm-size` (in **Extra Parameters**) is shared memory Ray uses to pass data between models fast. The template's default of `2g` is only sized for the single small quick-start model above.
+`--shm-size` (in **Extra Parameters**) is shared memory Ray uses to pass data between models fast. The template's default is `8g`.
 
 There's no universal "correct" number — it scales with your box's RAM and what you're running:
 
@@ -65,9 +76,9 @@ There's no universal "correct" number — it scales with your box's RAM and what
 
 This template keeps the Config surface intentionally small — enough to get a working single-container deployment without needing to understand Ray, state stores, or gateway replicas:
 
-- **Always visible**: API port, models.yaml path, model cache path, `HF_TOKEN`.
+- **Always visible**: API port, config folder (optional), model cache path, `HF_TOKEN`.
 - **Advanced**: metrics port + toggle, `MSHIP_LOG_LEVEL`, and (GPU template only) `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES`.
-- **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store, OpenTelemetry export, syslog log target/format, joining worker nodes, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. The speech and image backends (sherpa-onnx for Kokoro TTS, whisper.cpp for speech-to-text, stable-diffusion.cpp) are built into both images and need no container-level config at all — your `models.yaml` picks one per model.
+- **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store, OpenTelemetry export, syslog log target/format, joining worker nodes, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. The speech and image backends (sherpa-onnx for Kokoro TTS, whisper.cpp for speech-to-text, stable-diffusion.cpp) are built into both images and need no container-level config at all — your model config picks one per model.
 
 ## No authentication
 
@@ -78,10 +89,16 @@ modelship does not authenticate callers: there are no API keys, and anyone who c
 The image's entrypoint is the `mship` CLI with no default subcommand, so the container needs `start` passed to it. Both templates set this in **Post Arguments**:
 
 ```
-start --config /modelship/config/models.yaml
+start
 ```
 
-If you installed the template earlier, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has the old Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to the line above → Apply. This applies to `deploy …` (modelship up to v0.7.15) and to empty Post Arguments alike. With `deploy …` on a newer image the container logs `Waiting for a Ray node on this machine.`, serves nothing, and exits after 5 minutes with `no Ray cluster is running on this machine after 5 min`; `deploy` now only sends a model change to a server that is already running.
+Add your models to that line, see [Deploying models](#deploying-models). If you installed the template earlier, your saved container config (`/boot/config/plugins/dockerMan/templates-user/my-modelship-*.xml`) still has the old Post Arguments and won't pick up the change on its own. Edit the container → toggle **Advanced View** → set **Post Arguments** to `start`, followed by your models → Apply. This applies to `deploy …` (modelship up to v0.7.15) and to empty Post Arguments alike. With `deploy …` on a newer image the container logs `Waiting for a Ray node on this machine.`, serves nothing, and exits after 5 minutes with `no Ray cluster is running on this machine after 5 min`; `deploy` now only sends a model change to a server that is already running.
+
+## Troubleshooting: `pthread_create failed: Resource temporarily unavailable`
+
+Unraid caps every container at 2048 processes and threads (`--pids-limit 2048`) unless **Extra Parameters** sets its own `--pids-limit`. modelship runs a Ray cluster inside the container: about 25 processes plus one idle worker per CPU core, each with 35–50 threads. That is about 1,100 threads on a 10-core box before any model loads, and it grows with every core and every model. At the cap, thread creation fails: the log fills with `pthread_create failed: Resource temporarily unavailable`, `thread: Resource temporarily unavailable [system:11]` and `SIGABRT` stack traces from Ray workers, and the model never comes up.
+
+Both templates set `--pids-limit -1` (no cap). If you installed the template earlier, your saved container config doesn't have it: edit the container → toggle **Advanced View** → append `--pids-limit -1` to **Extra Parameters** → Apply. To see how close a running container is, compare the `PIDS` column of `docker stats --no-stream modelship-cuda` with `docker inspect -f '{{.HostConfig.PidsLimit}}' modelship-cuda`.
 
 ## Troubleshooting: `llama-server provisioning failed: Permission denied`
 
